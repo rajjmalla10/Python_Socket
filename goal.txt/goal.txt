@@ -1,0 +1,1 @@
+If you feel comfortable with the basics, try building a client-server application using sockets and threads, and have the server act as a multi-client task manager where each client can send requests for various tasks, such as getting a list of running processes, performing math calculations, or sending files.
