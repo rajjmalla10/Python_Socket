@@ -1,0 +1,93 @@
+[
+    {
+      "question": "Which ocean is the largest?",
+      "choices": [
+        "Atlantic Ocean",
+        "Indian Ocean",
+        "Pacific Ocean"
+      ],
+      "answer": "Pacific Ocean"
+    },
+    {
+      "question": "Who wrote 'Romeo and Juliet'?",
+      "choices": [
+        "Charles Dickens",
+        "William Shakespeare",
+        "Jane Austen"
+      ],
+      "answer": "William Shakespeare"
+    },
+    {
+      "question": "What is the square root of 16?",
+      "choices": [
+        "2",
+        "4",
+        "6"
+      ],
+      "answer": "4"
+    },
+    {
+      "question": "Which country is known as the Land of the Rising Sun?",
+      "choices": [
+        "China",
+        "Japan",
+        "South Korea"
+      ],
+      "answer": "Japan"
+    },
+    {
+      "question": "What is the longest river in the world?",
+      "choices": [
+        "Amazon River",
+        "Nile River",
+        "Yangtze River"
+      ],
+      "answer": "Nile River"
+    },
+    {
+      "question": "Which element has the chemical symbol 'O'?",
+      "choices": [
+        "Oxygen",
+        "Osmium",
+        "Ozone"
+      ],
+      "answer": "Oxygen"
+    },
+    {
+      "question": "Which animal is known as the King of the Jungle?",
+      "choices": [
+        "Lion",
+        "Tiger",
+        "Elephant"
+      ],
+      "answer": "Lion"
+    },
+    {
+      "question": "In what year did the Titanic sink?",
+      "choices": [
+        "1912",
+        "1920",
+        "1905"
+      ],
+      "answer": "1912"
+    },
+    {
+      "question": "What is the capital of Japan?",
+      "choices": [
+        "Kyoto",
+        "Osaka",
+        "Tokyo"
+      ],
+      "answer": "Tokyo"
+    },
+    {
+      "question": "Which gas do plants absorb from the atmosphere for photosynthesis?",
+      "choices": [
+        "Oxygen",
+        "Carbon Dioxide",
+        "Nitrogen"
+      ],
+      "answer": "Carbon Dioxide"
+    }
+  ]
+  
