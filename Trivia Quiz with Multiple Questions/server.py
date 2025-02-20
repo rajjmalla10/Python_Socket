@@ -9,29 +9,35 @@ host = "127.0.0.1"
 port = 5004
 
 
-def main(question_json):
-    print("Welcome to the Trivia Quizz program")
-    ques = input("\nWould You like to play?if yes enter: (y) if not then (n)").lower()
-    while ques not in ['n','y']:
-        if ques == "":
-            print("No Input provided, so Quit")
-            break
-        ques = input("Please enter a valid input either 'y' or 'n'").lower()
+
+def start_quiz(client_socket,question_json):
+    question_data= questions(question_json)
+
+    question = question_data['question']
+    choices = question_data['choices']
+    answer = question_data['answer']
+
+
+    #send question and  choices to the client
+
+    data = json.dumps({'question': question, 'choices': choices})
+    client_socket.sendall(data.encode('utf-8'))
+
+
     
-    if ques == "y":
-        start_quiz = start_quiz(client_socket)
-    else:
-        print("Existing the question section!")
-        return            
-        
-        
     pass
 
-def start_quiz(client_socket):
-    
+
+
 
 def questions(client_socket,question_json):
-    data = json.loads(question_json)   
+    try:
+        with open(question_json,'r') as file:
+            data = json.load(file)
+    except FileNotFoundError as e:
+        print(f"Something wrong with the file {e}") 
+        sys.exit(1)
+
     try:
         if isinstance(data,list):
             random_item = random.choice(data)
@@ -48,27 +54,59 @@ def questions(client_socket,question_json):
     return random_item       
 
 
+def start_server():
+    try:
+        # 'Start the server and handle client and server connection'
+        try:
+            server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        except socket.error as err:
+            print("Could not create a socket")
+            print(f"Reason: {err}")
+            sys.exit(1)
+            
+        server_socket.bind((host,port))
 
-try:
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-except socket.error as err:
-    print("Could not create a socket")
-    print(f"Reason: {err}")
-    sys.exit(1)
-    
-server_socket.bind((host,port))
+        server_socket.listen(2)
 
-server_socket.listen(2)
+        a = 0
+        while True:
+            a += 1
+            try:
+                print("Server accepting connection!!")
+                client_socket, addr = server_socket.accept()
+                print(f'Client {addr} connected')
+            except socket.error as e:
+                print(f"Invalid address: {e}") 
+                sys.exit(1)
 
-try:
-    print("Server accepting connection!!")
-    client_socket, addr = server_socket.accept()
-except socket.error as e:
-    print(f"Invalid address: {e}") 
-    sys.exit(1)
-    
-data = client_socket.recv(BUFFER_SIZE)
-print(F"{data.decode('utf-8')}")
+
+            response = client_socket.recv(BUFFER_SIZE).decode('utf-8')
+
+            #send Invitation to client
+            client_socket.send(f'Do you  want to play Travia Quiz Game client {a} ?'.encode('utf-8'))
+
+            #Recieve the response  from that  client
+            response = client_socket.recv(BUFFER_SIZE).decode('utf-8').strip()
+
+            if response == 'y':
+                print("Client accepted the invitation and wants to play the quizz game!!")
+                start_quiz(client_socket,question_json)
+            else:
+                print("Client decliend the invitation")
+                client_socket.close()    
+
+            data = client_socket.recv(BUFFER_SIZE)
+            print(F"{data.decode('utf-8')}")
+
+    except socket.error as err:
+        print(f"Socket error: {err}")
+        sys.exit(1)
+
+        
+
+if __name__=="__main__":
+    start_server()
+
 
 
 
