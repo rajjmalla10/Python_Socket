@@ -2,21 +2,22 @@ import json
 import socket 
 
 host = "127.0.0.1"
-port = 5003
+port = 5004
 
 BUFFER_SIZE = 1024
 
 def response():
     print("Welcome to the Trivia Quizz program")
-    ques = input("\nEnter 'y' or 'n").lower()
-    while ques not in ['n','y']:
-        ques = input("Please enter a valid input either 'y' or 'n'").lower()
-    
-    if ques == "y":
-        return ques
-    else:
-        print("Existing the question section!")
-        return            
+    while True:
+        ques = input("\nEnter 'y' or 'n").lower()
+        while ques not in ['n','y']:
+            ques = input("Please enter a valid input either 'y' or 'n'").lower()
+        
+        if ques == ["y",'n']:
+            return ques
+        
+        print("INvalid input must enter either y or n")
+                    
         
         
     pass
@@ -41,13 +42,18 @@ def start_client():
         server_resp = client_socket.recv(BUFFER_SIZE).decode('utf-8')
         print(server_resp)
 
-        if server_resp:
+        if not server_resp:
+            print("Server Disconnected")
+            break
+
+
+        if server_resp.startswith('Do you'):
             try:
-                response()
-                if response()== 'y':
-                    client_socket.sendall('y'.encode('utf-8'))
-                elif response() == 'n':
-                    client_socket.sendall('n'.encode('utf-8'))
+                user_choice = response()
+                client_socket.sendall(user_choice.encode('utf-8'))
+
+                if user_choice == 'n':
+                    print("Exciting game")
                     break
                 else:
                     print("Ending!")
@@ -59,14 +65,16 @@ def start_client():
 
 
         elif "question" in server_resp:
-            question_data = json.loads(server_resp)
-            print(f"\n{question_data['question']}")
-            for  index, choice in  enumerate(question_data['choices']):    
-                print(f'{index} - {choice}')
+            try:
+                question_data = json.loads(server_resp)
+                print(f"\n{question_data['question']}")
+                for  index, choice in  enumerate(question_data['choices'], start=1):    
+                    print(f'{index} - {choice}')
 
-            user_answer =  input("Enter the answer").strip()
-            client_socket.sendall(user_answer.encode('utf-8')) 
-
+                user_answer =  input("Enter the number of your answer").strip()
+                client_socket.sendall(user_answer.encode('utf-8')) 
+            except json.JSONDecodeError:
+                print("Error: Recieved invalid question data from the server")
 
 
         else:

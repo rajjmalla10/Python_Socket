@@ -1,57 +1,93 @@
 import json
 import random
 import  socket
-import sys 
+import sys
+import time 
 
 BUFFER_SIZE = 1024
-question_json = 'question.json'
+QUESTION_JSON = 'question.json'
 host = "127.0.0.1"
 port = 5004
 
 
 
-def start_quiz(client_socket,question_json):
-    question_data= questions(question_json)
-
-    question = question_data['question']
-    choices = question_data['choices']
-    answer = question_data['answer']
 
 
-    #send question and  choices to the client
-
-    data = json.dumps({'question': question, 'choices': choices})
-    client_socket.sendall(data.encode('utf-8'))
-
-
-    
-    pass
-
-
-
-
-def questions(client_socket,question_json):
+def questions():
     try:
-        with open(question_json,'r') as file:
+        with open(QUESTION_JSON,'r') as file:
             data = json.load(file)
     except FileNotFoundError as e:
         print(f"Something wrong with the file {e}") 
         sys.exit(1)
 
-    try:
-        if isinstance(data,list):
-            random_item = random.choice(data)
-            data.remove(random_item)
-            
-        else:
-            print("The data is not a valid list or it's empty")
-            sys.exit(1)    
-            
+    except json.JSONDecodeError:
+        print(f'Error:{QUESTION_JSON} is not a valid json file')   
+
     except Exception as e:
         print(f"Something wrong with Json File: {e}")        
-        sys.exit(1)
+        sys.exit(1)     
+
     
-    return random_item       
+    if not isinstance(data,list) or len(data)==0:
+        print("Error: Question file is empty or not in list format")
+        sys.exit(1)
+    return data    
+    
+   
+    
+
+    
+    
+         
+
+
+def start_quiz(client_socket,questions):
+    #  Send questions to the client and handle their responses. 
+    for quesiton_data in questions:
+        choices_index = [f"{i+1}. {choice}" for i, choice in enumerate(quesiton_data['choices'])]
+
+
+        data = json.dumps({'question': quesiton_data['question'] , 'choices': choices_index, 'correct_answer': quesiton_data['answer'] })
+
+        client_socket.sendall(data.encode('utf-8'))
+
+        client_response = client_socket.recv(BUFFER_SIZE).decode('utf-8')
+        print(f"CLient answered {client_response}")
+
+        try:
+            choices_index = int(client_response) - 1
+            if 0 <= client_response < len(quesiton_data['choices']):
+                #retrieve the chosen answer. retriece the actual answer text corresponding to the chosen text
+                chosen_answer = quesiton_data['choices'][choices_index]
+                print(f"User Chosen answer: {chosen_answer}")
+
+                if chosen_answer == quesiton_data['answer']:
+                    print("Correct answer")
+                    client_socket.sendall("Correct!".encode('utf-8'))
+                else:
+                    print(f"Incorrect Answer")
+                    client_socket.sendall(f"Incorrect!! The correct answer is {quesiton_data['answer']}".encode('utf-8'))
+
+
+            else:
+                print("Invalid choice of index from client. ")
+                client_socket.sendall("Invalid Choice!!".encode('utf-8'))
+        except ValueError:
+                print("Invalid choice index from the client") 
+                client_socket.sendall("Invalid response!! Please send a number".encode('utf-8'))
+
+
+                pass    
+        
+
+    
+
+    
+
+
+    
+    pass
 
 
 def start_server():
@@ -80,7 +116,6 @@ def start_server():
                 sys.exit(1)
 
 
-            response = client_socket.recv(BUFFER_SIZE).decode('utf-8')
 
             #send Invitation to client
             client_socket.send(f'Do you  want to play Travia Quiz Game client {a} ?'.encode('utf-8'))
@@ -90,13 +125,18 @@ def start_server():
 
             if response == 'y':
                 print("Client accepted the invitation and wants to play the quizz game!!")
-                start_quiz(client_socket,question_json)
+                questions = questions()
+                random.shuffle(questions)
+                start_quiz(client_socket, questions[:5])
             else:
                 print("Client decliend the invitation")
+                client_socket.sendall("Goodbye!".encode('utf-8'))
                 client_socket.close()    
+
 
             data = client_socket.recv(BUFFER_SIZE)
             print(F"{data.decode('utf-8')}")
+            
 
     except socket.error as err:
         print(f"Socket error: {err}")
